@@ -1,1 +1,799 @@
-{"openapi":"3.0.0","info":{"title":"Country State City API","description":"API documentation for the Country State City API","contact":{"name":"Darshan Gada (dr5hn)","email":"gadadarshan@gmail.com"},"version":"2.0.0"},"servers":[{"url":"https:\/\/api.countrystatecity.in\/v1","description":"CSC Api"}],"paths":{"\/countries":{"get":{"tags":["Countries"],"summary":"Get all Countries","operationId":"fc8f367b4391eb8626c2a4719acb01b9","responses":{"200":{"description":"Returns a list of countries","content":{"application\/json":{"schema":{"type":"array","items":{"$ref":"#\/components\/schemas\/Country"}}}}},"401":{"description":"Unauthorized","content":{"application\/json":{"schema":{"properties":{"error":{"type":"string","example":"Unauthorized. You shouldn't be here."}},"type":"object"}}}}},"security":[{"ApiKeyAuth":[]}]}},"\/countries\/{ciso}":{"get":{"tags":["Countries"],"summary":"Get country according to ISO2 code","operationId":"8cc6e15062787511bbc9ac8a226dd442","parameters":[{"name":"ciso","in":"path","description":"ISO2 code of the country","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Returns the country details","content":{"application\/json":{"schema":{"$ref":"#\/components\/schemas\/Country"}}}},"404":{"description":"Country not found","content":{"application\/json":{"schema":{"properties":{"error":{"type":"string","example":"No Country Found."}},"type":"object"}}}}},"security":[{"ApiKeyAuth":[]}]}},"\/countries\/{ciso}\/states":{"get":{"tags":["States"],"summary":"Get all states of a specific country","operationId":"2b0ca6620299b831d35538492d953389","parameters":[{"name":"ciso","in":"path","description":"ISO2 code of the country","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Returns a list of states","content":{"application\/json":{"schema":{"type":"array","items":{"$ref":"#\/components\/schemas\/State"}}}}},"404":{"description":"No states found","content":{"application\/json":{"schema":{"properties":{"error":{"type":"string","example":"No States\/Regions found."}},"type":"object"}}}}},"security":[{"ApiKeyAuth":[]}]}},"\/countries\/{ciso}\/cities":{"get":{"tags":["Cities"],"summary":"Get all cities of a specific country","operationId":"d7517ae1ef08154bba29e90cdd796247","parameters":[{"name":"ciso","in":"path","description":"ISO2 code of the country","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Returns a list of cities","content":{"application\/json":{"schema":{"type":"array","items":{"$ref":"#\/components\/schemas\/City"}}}}},"404":{"description":"No cities found","content":{"application\/json":{"schema":{"properties":{"error":{"type":"string","example":"No Cities Found."}},"type":"object"}}}}},"security":[{"ApiKeyAuth":[]}]}},"\/countries\/{ciso}\/states\/{siso}\/cities":{"get":{"tags":["Cities"],"summary":"Get all cities of a specific country and state","operationId":"ccace9a77a2732d2d0c019eeff599bab","parameters":[{"name":"ciso","in":"path","description":"ISO2 code of the country","required":true,"schema":{"type":"string"}},{"name":"siso","in":"path","description":"ISO2 code of the state","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Returns a list of cities","content":{"application\/json":{"schema":{"type":"array","items":{"$ref":"#\/components\/schemas\/City"}}}}},"404":{"description":"No cities found","content":{"application\/json":{"schema":{"properties":{"error":{"type":"string","example":"No Cities Found."}},"type":"object"}}}}},"security":[{"ApiKeyAuth":[]}]}},"\/states":{"get":{"tags":["States"],"summary":"Get all states","operationId":"7a3ae9cf4986fe2e1be9f79dc3727b87","responses":{"200":{"description":"Returns a list of states","content":{"application\/json":{"schema":{"type":"array","items":{"$ref":"#\/components\/schemas\/State"}}}}}},"security":[{"ApiKeyAuth":[]}]}},"\/countries\/{ciso}\/states\/{siso}":{"get":{"tags":["States"],"summary":"Get state details from country and state ISO2 codes","operationId":"88d90fec00f3bee456081b6b1cf02149","parameters":[{"name":"ciso","in":"path","description":"ISO2 code of the country","required":true,"schema":{"type":"string"}},{"name":"siso","in":"path","description":"ISO2 code of the state","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Returns the state details","content":{"application\/json":{"schema":{"$ref":"#\/components\/schemas\/State"}}}},"404":{"description":"State not found","content":{"application\/json":{"schema":{"properties":{"error":{"type":"string","example":"No State\/Region Found."}},"type":"object"}}}}},"security":[{"ApiKeyAuth":[]}]}}},"components":{"schemas":{"City":{"properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"latitude":{"type":"string"},"longitude":{"type":"string"}},"type":"object"},"Country":{"properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"iso3":{"type":"string"},"iso2":{"type":"string"},"phonecode":{"type":"string"},"capital":{"type":"string"},"currency":{"type":"string"},"native":{"type":"string"},"emoji":{"type":"string"}},"type":"object"},"State":{"properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"iso2":{"type":"string"}},"type":"object"}},"securitySchemes":{"ApiKeyAuth":{"type":"apiKey","description":"This api uses API KEY as an authentication method.","name":"X-CSCAPI-KEY","in":"header"}}}}
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Country State City API",
+    "description": "Geographic data API providing countries, states, and cities with tiered access levels.\n\n## Authentication\nAll endpoints require an API key passed via the `X-CSCAPI-KEY` header. Get your free key at [app.countrystatecity.in](https://app.countrystatecity.in).\n\n## Pricing Tiers\nThe fields returned and endpoints available depend on your plan:\n\n| Tier | Price | Daily Limit | Monthly Limit | Data Access |\n|------|-------|-------------|---------------|-------------|\n| Community | Free | 100 | 3,000 | Basic |\n| Starter | $5/mo | 300 | 9,000 | Basic |\n| Supporter | $9/mo | 1,000 | 30,000 | Coordinates |\n| Professional | $29/mo | 3,300 | 100,000 | Full |\n| Business | $79/mo | 25,000 | 750,000 | Full |\n\n## Data Access Levels\n- **Basic** (Community, Starter): Core identification fields only\n- **Coordinates** (Supporter): Basic + extended metadata and geographic coordinates\n- **Full** (Professional, Business): All fields including translations and wikiDataId\n\n## Feature Availability\n| Endpoint | Community / Starter | Supporter | Professional+ |\n|----------|-------------------|-----------|---------------|\n| GET /countries | ✅ | ✅ | ✅ |\n| GET /countries/{ciso} | ✅ | ✅ | ✅ |\n| GET /countries/{ciso}/states | ✅ | ✅ | ✅ |\n| GET /countries/{ciso}/states/{siso} | ✅ | ✅ | ✅ |\n| GET /countries/{ciso}/states/{siso}/cities | ✅ | ✅ | ✅ |\n| GET /states | ❌ | ✅ | ✅ |\n| GET /countries/{ciso}/cities | ❌ | ❌ | ✅ |\n\n## Rate Limiting\nRequests exceeding your daily or monthly quota receive a `429` response with details about your limits and reset time.\n\n## Caching\nAll responses include `Cache-Control`, `ETag`, and `X-Cache` (HIT/MISS) headers. Use `If-None-Match` for conditional requests to receive `304 Not Modified`.",
+    "contact": {
+      "name": "Darshan Gada (dr5hn)",
+      "email": "gadadarshan@gmail.com",
+      "url": "https://countrystatecity.in"
+    },
+    "license": {
+      "name": "Creative Commons Attribution 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "version": "2.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.countrystatecity.in/v1",
+      "description": "Production API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Countries",
+      "description": "Country data — 250+ countries with metadata, coordinates, and translations"
+    },
+    {
+      "name": "States",
+      "description": "State/province/region data — 5,000+ subdivisions"
+    },
+    {
+      "name": "Cities",
+      "description": "City data — 150,000+ cities worldwide"
+    }
+  ],
+  "paths": {
+    "/countries": {
+      "get": {
+        "tags": ["Countries"],
+        "summary": "Get all countries",
+        "description": "Returns a list of all countries. Fields returned depend on your plan's data access level.\n\n**Availability:** All tiers",
+        "operationId": "getCountries",
+        "responses": {
+          "200": {
+            "description": "List of countries",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Country" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/countries/{ciso}": {
+      "get": {
+        "tags": ["Countries"],
+        "summary": "Get country by ISO2 code or ID",
+        "description": "Returns detailed information for a single country. Accepts ISO2 code (e.g., `IN`, `US`) or numeric ID.\n\n**Availability:** All tiers",
+        "operationId": "getCountry",
+        "parameters": [
+          {
+            "name": "ciso",
+            "in": "path",
+            "description": "ISO2 code (e.g., `IN`) or numeric ID of the country",
+            "required": true,
+            "schema": { "type": "string", "example": "IN" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Country details",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Country" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/countries/{ciso}/states": {
+      "get": {
+        "tags": ["States"],
+        "summary": "Get states of a country",
+        "description": "Returns all states/provinces/regions for the specified country.\n\n**Availability:** All tiers",
+        "operationId": "getCountryStates",
+        "parameters": [
+          {
+            "name": "ciso",
+            "in": "path",
+            "description": "ISO2 code of the country (e.g., `IN`)",
+            "required": true,
+            "schema": { "type": "string", "example": "IN" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of states",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/State" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/countries/{ciso}/states/{siso}": {
+      "get": {
+        "tags": ["States"],
+        "summary": "Get state detail",
+        "description": "Returns detailed information for a single state identified by country and state ISO2 codes.\n\n**Availability:** All tiers",
+        "operationId": "getCountryStateDetail",
+        "parameters": [
+          {
+            "name": "ciso",
+            "in": "path",
+            "description": "ISO2 code of the country (e.g., `IN`)",
+            "required": true,
+            "schema": { "type": "string", "example": "IN" }
+          },
+          {
+            "name": "siso",
+            "in": "path",
+            "description": "ISO2 code of the state (e.g., `MH`)",
+            "required": true,
+            "schema": { "type": "string", "example": "MH" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "State details",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/State" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/countries/{ciso}/states/{siso}/cities": {
+      "get": {
+        "tags": ["Cities"],
+        "summary": "Get cities of a state",
+        "description": "Returns all cities for a specific state within a country.\n\n**Availability:** All tiers",
+        "operationId": "getCountryStateCities",
+        "parameters": [
+          {
+            "name": "ciso",
+            "in": "path",
+            "description": "ISO2 code of the country (e.g., `IN`)",
+            "required": true,
+            "schema": { "type": "string", "example": "IN" }
+          },
+          {
+            "name": "siso",
+            "in": "path",
+            "description": "ISO2 code of the state (e.g., `MH`)",
+            "required": true,
+            "schema": { "type": "string", "example": "MH" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of cities",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/City" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/countries/{ciso}/cities": {
+      "get": {
+        "tags": ["Cities"],
+        "summary": "Get all cities of a country",
+        "description": "Returns all cities for an entire country. This can be a large response (e.g., India has 48,000+ cities).\n\n**Availability:** Professional and above only. Returns `403` on lower tiers.",
+        "operationId": "getCountryCities",
+        "parameters": [
+          {
+            "name": "ciso",
+            "in": "path",
+            "description": "ISO2 code of the country (e.g., `IN`)",
+            "required": true,
+            "schema": { "type": "string", "example": "IN" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of cities",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/City" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/states": {
+      "get": {
+        "tags": ["States"],
+        "summary": "Get all states globally",
+        "description": "Returns all states/provinces across all countries. This is a large response (5,000+ records).\n\n**Availability:** Supporter and above only. Returns `403` on Community and Starter tiers.",
+        "operationId": "getAllStates",
+        "responses": {
+          "200": {
+            "description": "List of all states globally",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/State" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Country": {
+        "type": "object",
+        "description": "Country object. Fields returned depend on your plan's data access level.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier",
+            "example": 101
+          },
+          "name": {
+            "type": "string",
+            "description": "Country name in English",
+            "example": "India"
+          },
+          "iso2": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 code",
+            "example": "IN"
+          },
+          "iso3": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-3 code",
+            "example": "IND"
+          },
+          "phonecode": {
+            "type": "string",
+            "description": "International dialling code",
+            "example": "91"
+          },
+          "capital": {
+            "type": "string",
+            "nullable": true,
+            "description": "Capital city name",
+            "example": "New Delhi"
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true,
+            "description": "Currency code",
+            "example": "INR"
+          },
+          "native": {
+            "type": "string",
+            "nullable": true,
+            "description": "Country name in native language",
+            "example": "भारत"
+          },
+          "emoji": {
+            "type": "string",
+            "nullable": true,
+            "description": "Flag emoji",
+            "example": "🇮🇳"
+          },
+          "latitude": {
+            "type": "string",
+            "nullable": true,
+            "description": "Latitude coordinate",
+            "example": "20.00000000"
+          },
+          "longitude": {
+            "type": "string",
+            "nullable": true,
+            "description": "Longitude coordinate",
+            "example": "77.00000000"
+          },
+          "region": {
+            "type": "string",
+            "nullable": true,
+            "description": "Geographic region",
+            "example": "Asia"
+          },
+          "region_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Region identifier"
+          },
+          "subregion": {
+            "type": "string",
+            "nullable": true,
+            "description": "Geographic subregion",
+            "example": "Southern Asia"
+          },
+          "subregion_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Subregion identifier"
+          },
+          "timezones": {
+            "type": "string",
+            "nullable": true,
+            "description": "JSON string of timezone objects with zoneName, gmtOffset, gmtOffsetName, abbreviation, tzName",
+            "example": "[{\"zoneName\":\"Asia/Kolkata\",\"gmtOffset\":19800,\"gmtOffsetName\":\"UTC+05:30\",\"abbreviation\":\"IST\",\"tzName\":\"Indian Standard Time\"}]"
+          },
+          "numeric_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 3166-1 numeric code. **Coordinates tier and above.**",
+            "example": "356"
+          },
+          "currency_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Full currency name. **Coordinates tier and above.**",
+            "example": "Indian rupee"
+          },
+          "currency_symbol": {
+            "type": "string",
+            "nullable": true,
+            "description": "Currency symbol. **Coordinates tier and above.**",
+            "example": "₹"
+          },
+          "tld": {
+            "type": "string",
+            "nullable": true,
+            "description": "Top-level domain. **Coordinates tier and above.**",
+            "example": ".in"
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nationality/demonym. **Coordinates tier and above.**",
+            "example": "Indian"
+          },
+          "population": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Population count. **Coordinates tier and above.**"
+          },
+          "gdp": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Gross domestic product (USD). **Coordinates tier and above.**"
+          },
+          "area_sq_km": {
+            "type": "number",
+            "nullable": true,
+            "description": "Area in square kilometres. **Coordinates tier and above.**"
+          },
+          "postal_code_format": {
+            "type": "string",
+            "nullable": true,
+            "description": "Postal code format pattern. **Coordinates tier and above.**"
+          },
+          "postal_code_regex": {
+            "type": "string",
+            "nullable": true,
+            "description": "Postal code validation regex. **Coordinates tier and above.**"
+          },
+          "emojiU": {
+            "type": "string",
+            "nullable": true,
+            "description": "Flag emoji Unicode points. **Coordinates tier and above.**",
+            "example": "U+1F1EE U+1F1F3"
+          },
+          "translations": {
+            "type": "string",
+            "nullable": true,
+            "description": "JSON string of translations in 18+ languages (kr, pt-BR, pt, nl, hr, fa, de, es, fr, ja, it, cn, tr). **Full tier only (Professional+).**"
+          },
+          "wikiDataId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Wikidata item identifier. **Full tier only (Professional+).**",
+            "example": "Q668"
+          }
+        },
+        "required": ["id", "name", "iso2", "iso3"]
+      },
+      "State": {
+        "type": "object",
+        "description": "State/province/region object. Fields returned depend on your plan's data access level.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier",
+            "example": 4008
+          },
+          "name": {
+            "type": "string",
+            "description": "State name in English",
+            "example": "Maharashtra"
+          },
+          "iso2": {
+            "type": "string",
+            "nullable": true,
+            "description": "State/province ISO code",
+            "example": "MH"
+          },
+          "country_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Parent country ID"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "Parent country ISO2 code",
+            "example": "IN"
+          },
+          "latitude": {
+            "type": "string",
+            "nullable": true,
+            "description": "Latitude coordinate",
+            "example": "19.75147980"
+          },
+          "longitude": {
+            "type": "string",
+            "nullable": true,
+            "description": "Longitude coordinate",
+            "example": "75.71388840"
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true,
+            "description": "IANA timezone identifier",
+            "example": "Asia/Kolkata"
+          },
+          "fips_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "FIPS code. **Coordinates tier and above.**"
+          },
+          "iso3166_2": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 3166-2 subdivision code. **Coordinates tier and above.**"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true,
+            "description": "Administrative type (e.g., state, province, territory). **Coordinates tier and above.**",
+            "example": "state"
+          },
+          "level": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Administrative level. **Coordinates tier and above.**"
+          },
+          "parent_id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Parent subdivision ID (for nested administrative structures). **Coordinates tier and above.**"
+          },
+          "native": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name in native language. **Coordinates tier and above.**"
+          },
+          "population": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Population count. **Coordinates tier and above.**"
+          },
+          "translations": {
+            "type": "string",
+            "nullable": true,
+            "description": "JSON string of translations. **Full tier only (Professional+).**"
+          },
+          "wikiDataId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Wikidata item identifier. **Full tier only (Professional+).**",
+            "example": "Q1191"
+          }
+        },
+        "required": ["id", "name", "country_id", "country_code"]
+      },
+      "City": {
+        "type": "object",
+        "description": "City object. Fields returned depend on your plan's data access level. Community/Starter tiers receive only `id` and `name`.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier",
+            "example": 57606
+          },
+          "name": {
+            "type": "string",
+            "description": "City name in English",
+            "example": "Mumbai"
+          },
+          "state_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Parent state ID. **Coordinates tier and above.**"
+          },
+          "state_code": {
+            "type": "string",
+            "description": "Parent state ISO2 code. **Coordinates tier and above.**",
+            "example": "MH"
+          },
+          "country_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Parent country ID. **Coordinates tier and above.**"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "Parent country ISO2 code. **Coordinates tier and above.**",
+            "example": "IN"
+          },
+          "latitude": {
+            "type": "string",
+            "description": "Latitude coordinate. **Coordinates tier and above.**",
+            "example": "19.07283000"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Longitude coordinate. **Coordinates tier and above.**",
+            "example": "72.88261000"
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true,
+            "description": "IANA timezone identifier. **Coordinates tier and above.**",
+            "example": "Asia/Kolkata"
+          },
+          "population": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Population count. **Coordinates tier and above.**"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true,
+            "description": "Settlement type. **Coordinates tier and above.**"
+          },
+          "level": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Administrative level. **Coordinates tier and above.**"
+          },
+          "parent_id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Parent city ID. **Coordinates tier and above.**"
+          },
+          "native": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name in native language. **Coordinates tier and above.**"
+          },
+          "translations": {
+            "type": "string",
+            "nullable": true,
+            "description": "JSON string of translations. **Full tier only (Professional+).**"
+          },
+          "wikiDataId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Wikidata item identifier. **Full tier only (Professional+).**",
+            "example": "Q1156"
+          }
+        },
+        "required": ["id", "name"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          }
+        },
+        "required": ["error"]
+      },
+      "RateLimitError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Daily usage limit exceeded. Please try again tomorrow or contact support for higher limits."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Your plan's limit for the exceeded period",
+            "example": 100
+          },
+          "period": {
+            "type": "string",
+            "enum": ["daily", "monthly"],
+            "example": "daily"
+          },
+          "tier": {
+            "type": "string",
+            "description": "Your current tier",
+            "example": "community"
+          },
+          "upgradeUrl": {
+            "type": "string",
+            "description": "URL to upgrade your plan",
+            "example": "https://app.countrystatecity.in/pricing"
+          }
+        },
+        "required": ["error"]
+      },
+      "FeatureError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "This feature is not available on your current plan."
+          },
+          "feature": {
+            "type": "string",
+            "description": "The feature flag that was denied",
+            "example": "bulkStates"
+          },
+          "upgradeUrl": {
+            "type": "string",
+            "example": "https://app.countrystatecity.in/pricing"
+          }
+        },
+        "required": ["error"]
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Missing or invalid API key",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Unauthorized. You shouldn't be here." }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Country not found." }
+          }
+        }
+      },
+      "FeatureRestricted": {
+        "description": "Feature not available on your current plan. Upgrade to access this endpoint.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/FeatureError" },
+            "example": {
+              "error": "This feature is not available on your current plan.",
+              "feature": "bulkStates",
+              "upgradeUrl": "https://app.countrystatecity.in/pricing"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Daily or monthly usage limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/RateLimitError" },
+            "example": {
+              "error": "Daily usage limit exceeded. Please try again tomorrow or contact support for higher limits.",
+              "limit": 100,
+              "period": "daily",
+              "tier": "community",
+              "upgradeUrl": "https://app.countrystatecity.in/pricing"
+            }
+          }
+        }
+      }
+    },
+    "headers": {
+      "CacheControl": {
+        "description": "Cache directive",
+        "schema": { "type": "string", "example": "public, max-age=3600" }
+      },
+      "ETag": {
+        "description": "Entity tag for conditional requests (use with `If-None-Match`)",
+        "schema": { "type": "string", "example": "\"a3f2b8c1d4e5f6a7b8c9d0e1f2a3b4c5\"" }
+      },
+      "XCache": {
+        "description": "Whether the response was served from cache",
+        "schema": { "type": "string", "enum": ["HIT", "MISS"], "example": "HIT" }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "description": "API key for authentication. Get your free key at [app.countrystatecity.in](https://app.countrystatecity.in).",
+        "name": "X-CSCAPI-KEY",
+        "in": "header"
+      }
+    }
+  }
+}
