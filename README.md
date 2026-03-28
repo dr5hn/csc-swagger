@@ -16,7 +16,7 @@ See the [live playground](https://playground.countrystatecity.in) for full endpo
 
 Current tiers, limits, and data access levels are always available at:
 
-**[app.countrystatecity.in/pricing](https://app.countrystatecity.in/pricing)**
+**[countrystatecity.in/pricing](https://countrystatecity.in/pricing)**
 
 ## Local Development
 
