@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Country State City API",
-    "description": "Geographic data API providing countries, states, and cities with tiered access levels.\n\n## Authentication\nAll endpoints require an API key passed via the `X-CSCAPI-KEY` header. Get your free key at [app.countrystatecity.in](https://app.countrystatecity.in).\n\n## Pricing Tiers\nThe fields returned and endpoints available depend on your plan:\n\n| Tier | Price | Daily Limit | Monthly Limit | Data Access |\n|------|-------|-------------|---------------|-------------|\n| Community | Free | 100 | 3,000 | Basic |\n| Starter | $5/mo | 300 | 9,000 | Basic |\n| Supporter | $9/mo | 1,000 | 30,000 | Coordinates |\n| Professional | $29/mo | 3,300 | 100,000 | Full |\n| Business | $79/mo | 25,000 | 750,000 | Full |\n\n## Data Access Levels\n- **Basic** (Community, Starter): Core identification fields only\n- **Coordinates** (Supporter): Basic + extended metadata and geographic coordinates\n- **Full** (Professional, Business): All fields including translations and wikiDataId\n\n## Feature Availability\n| Endpoint | Community / Starter | Supporter | Professional+ |\n|----------|-------------------|-----------|---------------|\n| GET /countries | ✅ | ✅ | ✅ |\n| GET /countries/{ciso} | ✅ | ✅ | ✅ |\n| GET /countries/{ciso}/states | ✅ | ✅ | ✅ |\n| GET /countries/{ciso}/states/{siso} | ✅ | ✅ | ✅ |\n| GET /countries/{ciso}/states/{siso}/cities | ✅ | ✅ | ✅ |\n| GET /states | ❌ | ✅ | ✅ |\n| GET /countries/{ciso}/cities | ❌ | ❌ | ✅ |\n\n## Rate Limiting\nRequests exceeding your daily or monthly quota receive a `429` response with details about your limits and reset time.\n\n## Caching\nAll responses include `Cache-Control`, `ETag`, and `X-Cache` (HIT/MISS) headers. Use `If-None-Match` for conditional requests to receive `304 Not Modified`.",
+    "description": "Geographic data API providing countries, states, and cities with tiered access levels.\n\n## Authentication\nAll endpoints require an API key passed via the `X-CSCAPI-KEY` header. Get your free key at [app.countrystatecity.in](https://app.countrystatecity.in).\n\n## Pricing & Limits\nThe fields returned, endpoints available, and request quotas depend on your plan. See current tiers and limits at:\n\n**[app.countrystatecity.in/pricing](https://app.countrystatecity.in/pricing)**\n\n## Data Access Levels\nEach plan includes a data access level that controls which fields are returned:\n\n- **Basic** — Core fields: id, name, iso2, iso3, phonecode, capital, currency, coordinates, region, timezones, emoji\n- **Coordinates** — Basic + extended metadata (population, tld, nationality, currency details, postal codes, etc.)\n- **Full** — All fields including translations (18+ languages) and wikiDataId\n\nFields restricted to higher tiers are marked in each schema below.\n\n## Feature Gating\nSome endpoints require a minimum tier. Restricted endpoints return `403` with an `upgradeUrl` when accessed on a lower plan. Check the [pricing page](https://app.countrystatecity.in/pricing) for current feature availability.\n\n## Rate Limiting\nRequests exceeding your daily or monthly quota receive a `429` response with your current limit, period, tier, and an upgrade URL.\n\n## Caching\nAll responses include `Cache-Control`, `ETag`, and `X-Cache` (HIT/MISS) headers. Use `If-None-Match` for conditional requests to receive `304 Not Modified`.",
     "contact": {
       "name": "Darshan Gada (dr5hn)",
       "email": "gadadarshan@gmail.com",
@@ -232,7 +232,7 @@
       "get": {
         "tags": ["Cities"],
         "summary": "Get all cities of a country",
-        "description": "Returns all cities for an entire country. This can be a large response (e.g., India has 48,000+ cities).\n\n**Availability:** Professional and above only. Returns `403` on lower tiers.",
+        "description": "Returns all cities for an entire country. This can be a large response (e.g., India has 48,000+ cities).\n\n**Availability:** Requires a higher-tier plan. Returns `403` on lower tiers. See [pricing](https://app.countrystatecity.in/pricing) for details.",
         "operationId": "getCountryCities",
         "parameters": [
           {
@@ -272,7 +272,7 @@
       "get": {
         "tags": ["States"],
         "summary": "Get all states globally",
-        "description": "Returns all states/provinces across all countries. This is a large response (5,000+ records).\n\n**Availability:** Supporter and above only. Returns `403` on Community and Starter tiers.",
+        "description": "Returns all states/provinces across all countries. This is a large response (5,000+ records).\n\n**Availability:** Requires a paid plan. Returns `403` on free tiers. See [pricing](https://app.countrystatecity.in/pricing) for details.",
         "operationId": "getAllStates",
         "responses": {
           "200": {
@@ -461,12 +461,12 @@
           "translations": {
             "type": "string",
             "nullable": true,
-            "description": "JSON string of translations in 18+ languages (kr, pt-BR, pt, nl, hr, fa, de, es, fr, ja, it, cn, tr). **Full tier only (Professional+).**"
+            "description": "JSON string of translations in 18+ languages (kr, pt-BR, pt, nl, hr, fa, de, es, fr, ja, it, cn, tr). **Full access level only.**"
           },
           "wikiDataId": {
             "type": "string",
             "nullable": true,
-            "description": "Wikidata item identifier. **Full tier only (Professional+).**",
+            "description": "Wikidata item identifier. **Full access level only.**",
             "example": "Q668"
           }
         },
@@ -562,12 +562,12 @@
           "translations": {
             "type": "string",
             "nullable": true,
-            "description": "JSON string of translations. **Full tier only (Professional+).**"
+            "description": "JSON string of translations. **Full access level only.**"
           },
           "wikiDataId": {
             "type": "string",
             "nullable": true,
-            "description": "Wikidata item identifier. **Full tier only (Professional+).**",
+            "description": "Wikidata item identifier. **Full access level only.**",
             "example": "Q1191"
           }
         },
@@ -575,7 +575,7 @@
       },
       "City": {
         "type": "object",
-        "description": "City object. Fields returned depend on your plan's data access level. Community/Starter tiers receive only `id` and `name`.",
+        "description": "City object. Fields returned depend on your plan's data access level. Basic tier plans receive only `id` and `name`.",
         "properties": {
           "id": {
             "type": "integer",
@@ -654,12 +654,12 @@
           "translations": {
             "type": "string",
             "nullable": true,
-            "description": "JSON string of translations. **Full tier only (Professional+).**"
+            "description": "JSON string of translations. **Full access level only.**"
           },
           "wikiDataId": {
             "type": "string",
             "nullable": true,
-            "description": "Wikidata item identifier. **Full tier only (Professional+).**",
+            "description": "Wikidata item identifier. **Full access level only.**",
             "example": "Q1156"
           }
         },
