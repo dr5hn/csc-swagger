@@ -12,7 +12,7 @@
       "name": "Creative Commons Attribution 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/"
     },
-    "version": "2.1.0"
+    "version": "2.2.0"
   },
   "servers": [
     {
@@ -32,6 +32,10 @@
     {
       "name": "Cities",
       "description": "City data — 150,000+ cities worldwide"
+    },
+    {
+      "name": "Regions",
+      "description": "Geographic regions and subregions — continental groupings of countries"
     }
   ],
   "paths": {
@@ -41,6 +45,15 @@
         "summary": "Get all countries",
         "description": "Returns a list of all countries. Fields returned depend on your plan's data access level.\n\n**Availability:** All tiers",
         "operationId": "getCountries",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search filter. Case-insensitive match on `name` and `native` fields. Min 2 characters. **Requires Supporter+ plan.**",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100, "example": "india" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of countries",
@@ -113,6 +126,13 @@
             "description": "ISO2 code of the country (e.g., `IN`)",
             "required": true,
             "schema": { "type": "string", "example": "IN" }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search filter. Case-insensitive match on `name` and `native` fields. Min 2 characters. **Requires Supporter+ plan.**",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100, "example": "india" }
           }
         ],
         "responses": {
@@ -202,6 +222,13 @@
             "description": "ISO2 code of the state (e.g., `MH`)",
             "required": true,
             "schema": { "type": "string", "example": "MH" }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search filter. Case-insensitive match on `name` and `native` fields. Min 2 characters. **Requires Supporter+ plan.**",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100, "example": "india" }
           }
         ],
         "responses": {
@@ -241,6 +268,13 @@
             "description": "ISO2 code of the country (e.g., `IN`)",
             "required": true,
             "schema": { "type": "string", "example": "IN" }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search filter. Case-insensitive match on `name` and `native` fields. Min 2 characters. **Requires Supporter+ plan.**",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100, "example": "india" }
           }
         ],
         "responses": {
@@ -274,6 +308,15 @@
         "summary": "Get all states globally",
         "description": "Returns all states/provinces across all countries. This is a large response (5,000+ records).\n\n**Availability:** Requires a paid plan. Returns `403` on free tiers. See [pricing](https://app.countrystatecity.in/pricing) for details.",
         "operationId": "getAllStates",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search filter. Case-insensitive match on `name` and `native` fields. Min 2 characters. **Requires Supporter+ plan.**",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100, "example": "india" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of all states globally",
@@ -287,6 +330,211 @@
                 "schema": {
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/State" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/regions": {
+      "get": {
+        "tags": ["Regions"],
+        "summary": "Get all regions",
+        "description": "Returns all geographic regions (e.g., Africa, Americas, Asia, Europe, Oceania).\n\n**Availability:** Supporter+ plan required.",
+        "operationId": "getRegions",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search filter on region name. Min 2 characters. **Requires Supporter+ plan with search feature.**",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of regions",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Region" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/regions/{id}": {
+      "get": {
+        "tags": ["Regions"],
+        "summary": "Get region by ID",
+        "description": "Returns a single region by its numeric ID.\n\n**Availability:** Supporter+ plan required.",
+        "operationId": "getRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Numeric region ID",
+            "required": true,
+            "schema": { "type": "integer", "example": 3 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region details",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Region" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/regions/{id}/subregions": {
+      "get": {
+        "tags": ["Regions"],
+        "summary": "Get subregions of a region",
+        "description": "Returns all subregions within a geographic region.\n\n**Availability:** Supporter+ plan required.",
+        "operationId": "getRegionSubregions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Numeric region ID",
+            "required": true,
+            "schema": { "type": "integer", "example": 3 }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search filter on subregion name. Min 2 characters.",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of subregions",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Subregion" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/subregions/{id}": {
+      "get": {
+        "tags": ["Regions"],
+        "summary": "Get subregion by ID",
+        "description": "Returns a single subregion by its numeric ID.\n\n**Availability:** Supporter+ plan required.",
+        "operationId": "getSubregion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Numeric subregion ID",
+            "required": true,
+            "schema": { "type": "integer", "example": 14 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subregion details",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Subregion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/FeatureRestricted" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/subregions/{id}/countries": {
+      "get": {
+        "tags": ["Regions"],
+        "summary": "Get countries in a subregion",
+        "description": "Returns all countries belonging to a subregion.\n\n**Availability:** Supporter+ plan required.",
+        "operationId": "getSubregionCountries",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Numeric subregion ID",
+            "required": true,
+            "schema": { "type": "integer", "example": 14 }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search filter on country name. Min 2 characters.",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of countries in subregion",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Cache": { "$ref": "#/components/headers/XCache" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Country" }
                 }
               }
             }
@@ -347,13 +595,13 @@
             "type": "string",
             "nullable": true,
             "description": "Country name in native language",
-            "example": "भारत"
+            "example": "\u092d\u093e\u0930\u0924"
           },
           "emoji": {
             "type": "string",
             "nullable": true,
             "description": "Flag emoji",
-            "example": "🇮🇳"
+            "example": "\ud83c\uddee\ud83c\uddf3"
           },
           "latitude": {
             "type": "string",
@@ -411,7 +659,7 @@
             "type": "string",
             "nullable": true,
             "description": "Currency symbol. **Coordinates tier and above.**",
-            "example": "₹"
+            "example": "\u20b9"
           },
           "tld": {
             "type": "string",
@@ -664,6 +912,68 @@
           }
         },
         "required": ["id", "name"]
+      },
+      "Region": {
+        "type": "object",
+        "description": "Geographic region. Fields returned depend on your plan's data access level.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier",
+            "example": 3
+          },
+          "name": {
+            "type": "string",
+            "description": "Region name",
+            "example": "Asia"
+          },
+          "translations": {
+            "type": "string",
+            "nullable": true,
+            "description": "JSON string of translations. **Full access level only.**"
+          },
+          "wikiDataId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Wikidata item identifier. **Coordinates tier and above.**"
+          }
+        },
+        "required": ["id", "name"]
+      },
+      "Subregion": {
+        "type": "object",
+        "description": "Geographic subregion within a region. Fields returned depend on your plan's data access level.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier",
+            "example": 14
+          },
+          "name": {
+            "type": "string",
+            "description": "Subregion name",
+            "example": "Southern Asia"
+          },
+          "region_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Parent region ID",
+            "example": 3
+          },
+          "translations": {
+            "type": "string",
+            "nullable": true,
+            "description": "JSON string of translations. **Full access level only.**"
+          },
+          "wikiDataId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Wikidata item identifier. **Coordinates tier and above.**"
+          }
+        },
+        "required": ["id", "name", "region_id"]
       },
       "Error": {
         "type": "object",
